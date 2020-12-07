@@ -1,0 +1,19 @@
+[package]
+name = "batufo-bevy"
+version = "0.1.0"
+authors = ["Thorsten Lorenz <thlorenz@gmx.de>"]
+edition = "2018"
+
+[dependencies]
+bevy = { path = "../../libs/bevy", version = "0.3.0" }
+
+
+# Compile all the *dependencies* in optimized release mode even if `--release` is not passed in
+[profile.dev]
+opt-level = 3
+debug = false
+
+# But compile the project itself in debug mode if `--release` is not passed in
+[profile.dev.package.batufo-bevy]
+opt-level = 0
+debug = true
