@@ -7,14 +7,15 @@ pub struct PlayerMovement;
 
 impl Plugin for PlayerMovement {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(player_movement_system)
-            .add_system(player_velocity_damp_system);
+        app.add_system(player_movement_system);
+        // .add_system(player_velocity_damp_system);
     }
 }
 
 fn player_movement_system(mut query: Query<(&Velocity, &mut Transform), With<Hero>>) {
     for (velocity, mut transform) in query.iter_mut() {
         transform.translation += velocity.0;
+        // println!("player: {}", transform.translation);
     }
 }
 

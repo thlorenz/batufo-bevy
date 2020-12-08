@@ -1,4 +1,7 @@
-use bevy::math::Rect;
+use bevy::{
+    math::{Rect, Vec3},
+    prelude::Transform,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TilePosition {
@@ -55,7 +58,7 @@ impl WorldPosition {
     pub fn from_tile_position(tp: &TilePosition, tile_size: u32) -> WorldPosition {
         let x = (tile_size * tp.col) as f32 + tp.rel_x;
         let z = (tile_size * tp.row) as f32 + tp.rel_y;
-        WorldPosition::new(x, 0.0, z)
+        WorldPosition::new(x, 0.0, -z)
     }
 
     #[allow(dead_code)]
@@ -63,7 +66,7 @@ impl WorldPosition {
         let ht = tile_size as f32 / 2.0;
         let x = (tile_size * tp.col) as f32 + tp.rel_x - ht;
         let z = (tile_size * tp.row) as f32 + tp.rel_y - ht;
-        WorldPosition::new(x, 0.0, z)
+        WorldPosition::new(x, 0.0, -z)
     }
 
     // When converting to tile position we transpose 3D positions to a 2D
@@ -71,22 +74,37 @@ impl WorldPosition {
     pub fn to_tile_position(&self, tile_size: u32) -> TilePosition {
         let tile_size = tile_size as f32;
         let col = (self.x / tile_size).floor() as u32;
-        let row = (self.z / tile_size).floor() as u32;
+        let row = ((-self.z) / tile_size).floor() as u32;
         let rel_x = self.x % tile_size;
-        let rel_y = self.z % tile_size;
+        let rel_y = (-self.z) % tile_size;
         TilePosition::new(col, row, rel_x, rel_y)
     }
 
     pub fn to_rect(&self, tile_size: u32) -> Rect<f32> {
         let ht = (tile_size / 2) as f32;
         let left = self.x - ht;
-        let bottom = self.z - ht;
+        let bottom = (-self.z) - ht;
         Rect {
             left,
             bottom,
             right: left + tile_size as f32,
             top: bottom + tile_size as f32,
         }
+    }
+}
+
+//
+// Bevy specific
+//
+impl Into<Vec3> for WorldPosition {
+    fn into(self) -> Vec3 {
+        Vec3::new(self.x, self.y, self.z)
+    }
+}
+
+impl Into<Transform> for WorldPosition {
+    fn into(self) -> Transform {
+        Transform::from_translation(self.into())
     }
 }
 

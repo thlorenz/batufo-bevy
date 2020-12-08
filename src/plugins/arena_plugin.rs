@@ -1,10 +1,8 @@
-use std::f32::consts::PI;
-
 use bevy::{asset::AssetPath, prelude::*};
 
 use crate::{
     arena::arena::Arena,
-    ecs::components::{Hero, Velocity},
+    ecs::components::{HeadLights, Hero, Velocity},
 };
 
 use super::game_plugin::GameProps;
@@ -25,22 +23,26 @@ fn setup_floor(
     game_props: Res<GameProps>,
     arena: Res<Arena>,
     asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     let asset = &game_props.assets.floor_tiles;
     let texture_handle = asset_server.load(AssetPath::new(asset.path.clone(), None));
     let texture_atlas =
         TextureAtlas::from_grid(texture_handle, asset.tile_size(), asset.rows, asset.cols);
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+    let _texture_atlas_handle = texture_atlases.add(texture_atlas);
 
-    let ntiles = asset.tiles();
-    for (idx, tile) in arena.floor_tiles.iter().enumerate() {
-        let sprite_idx = idx % ntiles;
+    let material = materials.add(Color::rgb(0.8, 0.7, 0.6).into());
+    let size = game_props.render.tile_size as f32 * 0.95;
+
+    for (_idx, tile) in arena.floor_tiles.iter().enumerate() {
         let pos = tile.to_world_position(game_props.render.tile_size);
-        commands.spawn(SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle.clone(),
-            transform: Transform::from_translation(Vec3::new(pos.x, pos.y, 0.0)),
-            sprite: TextureAtlasSprite::new(sprite_idx as u32),
+        let transform: Transform = pos.into();
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Box::new(size, size / 10.0, size))),
+            material: material.clone(),
+            transform,
             ..Default::default()
         });
     }
@@ -51,17 +53,23 @@ fn setup_walls(
     game_props: Res<GameProps>,
     arena: Res<Arena>,
     asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let asset = &game_props.assets.wall_metal;
     let texture_handle = asset_server.load(AssetPath::new(asset.path.clone(), None));
     let material = materials.add(texture_handle.into());
 
+    let size = game_props.render.tile_size as f32 * 0.95;
+
     for tile in arena.walls.iter() {
-        let pos = tile.to_world_position(game_props.render.tile_size);
-        commands.spawn(SpriteBundle {
+        let mut pos = tile.to_world_position(game_props.render.tile_size);
+        pos.y = size * 0.5;
+        let transform: Transform = pos.into();
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size })),
             material: material.clone(),
-            transform: Transform::from_translation(Vec3::new(pos.x, pos.y, 0.0)),
+            transform,
             ..Default::default()
         });
     }
@@ -72,21 +80,38 @@ fn setup_hero(
     game_props: Res<GameProps>,
     arena: Res<Arena>,
     asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let asset = &game_props.assets.hero;
     let texture_handle = asset_server.load(AssetPath::new(asset.path.clone(), None));
     let material = materials.add(texture_handle.into());
 
-    let pos = arena.player.to_world_position(game_props.render.tile_size);
-    let mut transform = Transform::from_translation(Vec3::new(pos.x, pos.y, 0.0));
-    transform.scale = Vec3::splat(game_props.render.tile_size as f32 / asset.tile_size().x);
-    transform.rotate(Quat::from_rotation_z(PI / 2.0));
+    let mut pos = arena.player.to_world_position(game_props.render.tile_size);
+    let size = game_props.render.tile_size as f32;
+    pos.y = size * 0.8;
+    let transform: Transform = pos.into();
+
     commands
-        .spawn(SpriteBundle {
-            material: material.clone(),
+        .spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size })),
+            material,
             transform,
             ..Default::default()
+        })
+        .with_children(|parent| {
+            parent
+                .spawn(LightBundle {
+                    light: Light {
+                        color: Color::rgb_linear(1.0, 1.0, 0.8),
+                        depth: 0.1..5.0,
+                        fov: f32::to_radians(15.0),
+                        ..Default::default()
+                    },
+                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, -15.0)),
+                    ..Default::default()
+                })
+                .with(HeadLights(true));
         })
         .with(Hero::default())
         .with(Velocity::default());

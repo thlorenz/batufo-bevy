@@ -6,6 +6,7 @@ use crate::arena::arena::Arena;
 
 pub struct GameRender {
     pub tile_size: u32,
+    pub tile_render_size: f32,
 }
 
 pub struct GameAsset {
@@ -69,7 +70,7 @@ pub struct GameCameras {
 
 impl Default for GameCameras {
     fn default() -> Self {
-        Self { platform_lerp: 0.5 }
+        Self { platform_lerp: 1.0 }
     }
 }
 pub struct GameProps {
@@ -82,7 +83,12 @@ impl GameProps {
     #[allow(dead_code)]
     pub fn default() -> Self {
         let tile_size = 48;
-        let render = GameRender { tile_size };
+        let render_scale = 0.1;
+        let tile_render_size = render_scale * tile_size as f32;
+        let render = GameRender {
+            tile_size,
+            tile_render_size,
+        };
         Self {
             render,
             assets: Default::default(),

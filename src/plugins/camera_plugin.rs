@@ -1,4 +1,7 @@
-use bevy::{prelude::*, render::camera::Camera};
+use bevy::{
+    prelude::*,
+    render::camera::{Camera, PerspectiveProjection},
+};
 
 use crate::ecs::components::Hero;
 
@@ -15,7 +18,12 @@ impl Plugin for CameraPlugin {
 }
 
 fn setup_camera(commands: &mut Commands) {
-    commands.spawn(Camera2dBundle {
+    commands.spawn(Camera3dBundle {
+        perspective_projection: PerspectiveProjection {
+            near: 1.0,
+            far: 5000.0,
+            ..Default::default()
+        },
         ..Default::default()
     });
 }
@@ -27,13 +35,18 @@ fn camera_follow_system(
     mut cameras: Query<&mut Transform, With<Camera>>,
 ) {
     let dt = time.delta_seconds();
+    let lerp = (1.5 * dt).min(game_props.cameras.platform_lerp);
     for player in players.iter() {
-        let lerp = (2.5 * dt).min(game_props.cameras.platform_lerp);
+        let p = player.translation;
         for mut camera in cameras.iter_mut() {
-            let dx = (player.translation.x - camera.translation.x) * lerp;
-            let dy = (player.translation.y - camera.translation.y) * lerp;
+            let camera_target = Vec3::new(p.x, p.y + 150.0, p.z + 400.0);
+            let dx = (camera_target.x - camera.translation.x) * lerp;
+            let dy = (camera_target.y - camera.translation.y) * lerp;
+            let dz = (camera_target.z - camera.translation.z) * lerp;
             camera.translation.x += dx;
             camera.translation.y += dy;
+            camera.translation.z += dz;
+            camera.look_at(p, Vec3::unit_y());
         }
     }
 }

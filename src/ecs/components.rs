@@ -8,3 +8,6 @@ pub struct Speed;
 
 #[derive(Default)]
 pub struct Velocity(pub Vec3);
+
+#[derive(Default)]
+pub struct HeadLights(pub bool);
