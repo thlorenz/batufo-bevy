@@ -21,6 +21,7 @@ fn velocity_input_system(
     mut query: Query<&mut Velocity, With<Hero>>,
 ) {
     let dv = 0.2;
+    let max_x_v = 8.0;
     for mut velocity in query.iter_mut() {
         if keyboard_input.pressed(KeyCode::W) {
             velocity.0.z -= dv;
@@ -34,16 +35,10 @@ fn velocity_input_system(
         if keyboard_input.pressed(KeyCode::D) {
             velocity.0.x += dv;
         }
-        /*
-        if velocity.0.z > 0.0 {
-            velocity.0.z = 0.0;
-        }
-        */
+        velocity.0.x = velocity.0.x.clamp(-max_x_v, max_x_v);
     }
 }
 
-/// The below doesn't work at this point as we are unable to get to the LightBundle
-/// which is a child of our player.
 fn light_input_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut lights_query: Query<(&mut Light, &mut HeadLights)>,

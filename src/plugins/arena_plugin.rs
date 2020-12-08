@@ -92,7 +92,7 @@ fn setup_hero(
 
     commands
         .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size })),
+            mesh: meshes.add(Mesh::from(shape::Box::new(size, size / 4.0, size * 1.5))),
             material,
             transform,
             ..Default::default()
