@@ -1,7 +1,7 @@
 pub fn level_face_off() -> &'static str {
     "
         =======================
-        =          p          =
+        =                     =
          =                   =
           =  s           +  =
            =               =

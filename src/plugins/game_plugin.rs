@@ -31,6 +31,8 @@ impl GameAsset {
 
 pub struct GameAssets {
     pub floor_tiles: GameAsset,
+    pub wall_metal: GameAsset,
+    pub hero: GameAsset,
 }
 
 impl Default for GameAssets {
@@ -43,13 +45,37 @@ impl Default for GameAssets {
                 cols: 8,
                 path: "textures/bg/floor-tiles.png".into(),
             },
+            wall_metal: GameAsset {
+                width: 48.0,
+                height: 48.0,
+                rows: 1,
+                cols: 1,
+                path: "textures/bg/wall-metal.png".into(),
+            },
+            hero: GameAsset {
+                width: 192.0,
+                height: 192.0,
+                rows: 1,
+                cols: 1,
+                path: "textures/sprites/player.png".into(),
+            },
         }
     }
 }
 
+pub struct GameCameras {
+    pub platform_lerp: f32,
+}
+
+impl Default for GameCameras {
+    fn default() -> Self {
+        Self { platform_lerp: 0.5 }
+    }
+}
 pub struct GameProps {
     pub render: GameRender,
     pub assets: GameAssets,
+    pub cameras: GameCameras,
 }
 
 impl GameProps {
@@ -60,6 +86,7 @@ impl GameProps {
         Self {
             render,
             assets: Default::default(),
+            cameras: Default::default(),
         }
     }
 }
