@@ -25,16 +25,14 @@ fn setup_floor(
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
+    // TODO: this is actually a spritesheet and the floor tiles should map to once tile
+    // in it, instead of rendering the entire thing, however haven't found a way to get
+    // at individual textures of a texture atlas.
     let asset = &game_props.assets.floor_tiles;
     let texture_handle = asset_server.load(AssetPath::new(asset.path.clone(), None));
-    let texture_atlas =
-        TextureAtlas::from_grid(texture_handle, asset.tile_size(), asset.rows, asset.cols);
-    let _texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-    let material = materials.add(Color::rgb(0.8, 0.7, 0.6).into());
-    let size = game_props.render.tile_size as f32 * 0.95;
+    let material = materials.add(texture_handle.into());
+    let size = game_props.render.tile_size as f32 * 0.92;
 
     for (_idx, tile) in arena.floor_tiles.iter().enumerate() {
         let pos = tile.to_world_position(game_props.render.tile_size);
@@ -64,10 +62,10 @@ fn setup_walls(
 
     for tile in arena.walls.iter() {
         let mut pos = tile.to_world_position(game_props.render.tile_size);
-        pos.y = size * 0.5;
+        pos.y = size * 1.0;
         let transform: Transform = pos.into();
         commands.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size })),
+            mesh: meshes.add(Mesh::from(shape::Box::new(size, size * 2.0, size))),
             material: material.clone(),
             transform,
             ..Default::default()
