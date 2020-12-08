@@ -37,6 +37,11 @@ impl Levels {
             builtins::practice_arena::level_practice_arena(),
         );
         add_level(&mut levels, "mini", builtins::mini::level_mini());
+        add_level(
+            &mut levels,
+            "coliseum",
+            builtins::coliseum::level_coliseum(),
+        );
         Levels { levels }
     }
 
