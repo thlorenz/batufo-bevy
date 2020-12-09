@@ -5,7 +5,7 @@ use bevy::{
 
 use crate::ecs::components::Hero;
 
-use super::game_plugin::GameProps;
+use super::game_plugin::GameCameras;
 
 #[derive(Default)]
 pub struct CameraPlugin;
@@ -30,16 +30,16 @@ fn setup_camera(commands: &mut Commands) {
 
 fn camera_follow_system(
     time: Res<Time>,
-    game_props: Res<GameProps>,
+    game_cameras: Res<GameCameras>,
     players: Query<&Transform, With<Hero>>,
     mut cameras: Query<&mut Transform, With<Camera>>,
 ) {
     let dt = time.delta_seconds();
-    let lerp = (1.5 * dt).min(game_props.cameras.platform_lerp);
+    let lerp = (1.5 * dt).min(game_cameras.platform_lerp);
     for player in players.iter() {
         let p = player.translation;
         for mut camera in cameras.iter_mut() {
-            let camera_target = Vec3::new(p.x, p.y + 150.0, p.z + 400.0);
+            let camera_target = Vec3::new(p.x, p.y + 180.0, p.z + 400.0);
             let dx = (camera_target.x - camera.translation.x) * lerp;
             let dy = (camera_target.y - camera.translation.y) * lerp;
             let dz = (camera_target.z - camera.translation.z) * lerp;

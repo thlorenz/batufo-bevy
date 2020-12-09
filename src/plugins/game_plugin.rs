@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, process};
 
 use bevy::prelude::*;
 
@@ -15,19 +15,6 @@ pub struct GameAsset {
     pub rows: usize,
     pub cols: usize,
     pub path: PathBuf,
-}
-
-impl GameAsset {
-    pub fn tile_size(&self) -> Vec2 {
-        Vec2::new(
-            self.width / self.rows as f32,
-            self.height / self.cols as f32,
-        )
-    }
-
-    pub fn tiles(&self) -> usize {
-        self.rows * self.cols
-    }
 }
 
 pub struct GameAssets {
@@ -73,15 +60,12 @@ impl Default for GameCameras {
         Self { platform_lerp: 1.0 }
     }
 }
-pub struct GameProps {
-    pub render: GameRender,
-    pub assets: GameAssets,
-    pub cameras: GameCameras,
-}
 
-impl GameProps {
-    #[allow(dead_code)]
-    pub fn default() -> Self {
+#[derive(Default)]
+pub struct GamePlugin;
+
+impl Plugin for GamePlugin {
+    fn build(&self, app: &mut AppBuilder) {
         let tile_size = 48;
         let render_scale = 0.1;
         let tile_render_size = render_scale * tile_size as f32;
@@ -89,22 +73,32 @@ impl GameProps {
             tile_size,
             tile_render_size,
         };
-        Self {
-            render,
-            assets: Default::default(),
-            cameras: Default::default(),
-        }
+
+        let arena =
+            Arena::for_level("face off", render.tile_size).expect("FATAL: unable to create arena");
+
+        app.init_resource::<GameCameras>()
+            .init_resource::<GameAssets>()
+            .init_resource::<GameCameras>()
+            .add_resource(render)
+            .add_resource(WindowDescriptor {
+                title: "batufo".to_string(),
+                width: 1024,
+                height: 768,
+                vsync: false,
+                resizable: true,
+                decorations: true,
+                cursor_locked: false,
+                cursor_visible: true,
+                ..Default::default()
+            })
+            .add_resource(arena)
+            .add_system(exit_game_system);
     }
 }
 
-#[derive(Default)]
-pub struct GamePlugin;
-
-impl Plugin for GamePlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        let game_props = GameProps::default();
-        let arena = Arena::for_level("face off", game_props.render.tile_size)
-            .expect("FATAL: unable to create arena");
-        app.add_resource(game_props).add_resource(arena);
+fn exit_game_system(keyboard_input: Res<Input<KeyCode>>) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        process::exit(0)
     }
 }

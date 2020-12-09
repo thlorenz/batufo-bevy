@@ -10,10 +10,12 @@ use plugins::{
     player_movement_plugin::PlayerMovement,
 };
 
+const BG: &str = "000000"; // "1E1C32"
+
 fn main() {
     App::build()
         .add_resource(ClearColor(
-            Color::hex("1E1C32").expect("Invalid Background Color"),
+            Color::hex(BG).expect("Invalid Background Color"),
         ))
         .add_plugin(GamePlugin)
         .add_plugin(LightPlugin)
