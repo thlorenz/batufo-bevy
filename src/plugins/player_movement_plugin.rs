@@ -7,9 +7,9 @@ pub struct PlayerMovement;
 
 impl Plugin for PlayerMovement {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(player_movement_system)
-            .add_system(player_roll_system)
-            .add_system(player_velocity_damp_system);
+        app.add_system(player_movement_system);
+        //        .add_system(player_roll_system);
+        //    .add_system(player_velocity_damp_system);
     }
 }
 
@@ -28,7 +28,8 @@ fn player_roll_system(mut query: Query<(&mut Transform, &Velocity), With<Hero>>)
         } else {
             (-velocity.0.x * rot_factor).min(max_rot)
         };
-        transform.rotation = Quat::from_rotation_z(rot);
+        let current_rot = transform.rotation.z;
+        transform.rotate(Quat::from_rotation_z(rot - current_rot));
     }
 }
 

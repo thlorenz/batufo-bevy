@@ -10,5 +10,5 @@ impl Plugin for LightPlugin {
 }
 
 fn setup_ambient_light_system(mut ambient_light: ResMut<AmbientLight>) {
-    ambient_light.color = Color::rgba(0.0, 0.0, 0.2, 1.0);
+    ambient_light.color = Color::rgba(0.8, 0.0, 0.2, 1.0);
 }

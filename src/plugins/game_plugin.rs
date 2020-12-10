@@ -87,7 +87,7 @@ impl Plugin for GamePlugin {
                 height: 768,
                 vsync: false,
                 resizable: true,
-                decorations: true,
+                decorations: false,
                 cursor_locked: false,
                 cursor_visible: true,
                 ..Default::default()
