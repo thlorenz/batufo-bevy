@@ -243,6 +243,7 @@ name = "batufo-bevy"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_mod_picking",
 ]
 
 [[package]]
@@ -474,6 +475,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_mod_picking"
+version = "0.2.0"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_pbr"
 version = "0.3.0"
 dependencies = [
@@ -556,6 +564,7 @@ dependencies = [
  "bevy_asset",
  "bevy_ecs",
  "bevy_reflect",
+ "bevy_transform",
  "bevy_utils",
  "parking_lot",
  "ron",

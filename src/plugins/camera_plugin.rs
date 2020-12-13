@@ -8,9 +8,7 @@ use crate::ecs::components::Hero;
 
 use super::game_plugin::GameCameras;
 use bevy::input::mouse::MouseWheel;
-
-#[derive(Default)]
-pub struct CameraPlugin;
+use bevy_mod_picking::PickSource;
 
 struct CameraProperties {
     distance_to_hero: f32,
@@ -18,10 +16,13 @@ struct CameraProperties {
 impl Default for CameraProperties {
     fn default() -> Self {
         Self {
-            distance_to_hero: 400.0,
+            distance_to_hero: 8.0,
         }
     }
 }
+
+#[derive(Default)]
+pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut AppBuilder) {
@@ -32,6 +33,11 @@ impl Plugin for CameraPlugin {
 }
 
 fn setup_camera(commands: &mut Commands) {
+    let translation = Vec3::new(936., 198.4, 184.);
+    let look_at = Vec3::new(936., 38.4, -216.);
+    let mut transform = Transform::from_translation(translation);
+    transform.look_at(look_at, Vec3::unit_y());
+
     commands
         .spawn(Camera3dBundle {
             perspective_projection: PerspectiveProjection {
@@ -39,8 +45,10 @@ fn setup_camera(commands: &mut Commands) {
                 far: 5000.0,
                 ..Default::default()
             },
+            //        transform,
             ..Default::default()
         })
+        .with(PickSource::default())
         .with(CameraProperties::default());
 }
 
@@ -51,7 +59,7 @@ fn camera_follow_system(
     mut cameras: Query<(&mut Transform, &CameraProperties), With<Camera>>,
 ) {
     let dt = time.delta_seconds();
-    let lerp = (2.0 * dt).min(game_cameras.platform_lerp);
+    let lerp = (10.0 * dt).min(game_cameras.platform_lerp);
     for player in players.iter() {
         let p_translation = player.translation;
         let Vec3 { x, z, .. } = vector_for_rotation_y(player.rotation);
@@ -83,14 +91,15 @@ fn camera_zoom_system(
     mouse_wheel_events: Res<Events<MouseWheel>>,
     mut cameras: Query<&mut CameraProperties, With<Camera>>,
 ) {
+    let scroll_factor = 0.02;
     for event in state.mouse_wheel_event_reader.iter(&mouse_wheel_events) {
         for mut props in cameras.iter_mut() {
-            props.distance_to_hero -= event.y;
-            if props.distance_to_hero > 2000.0 {
-                props.distance_to_hero = 2000.0;
+            props.distance_to_hero -= event.y * scroll_factor;
+            if props.distance_to_hero > 40.0 {
+                props.distance_to_hero = 40.0;
             }
-            if props.distance_to_hero < 100.0 {
-                props.distance_to_hero = 100.0;
+            if props.distance_to_hero < 2.0 {
+                props.distance_to_hero = 2.0;
             }
         }
     }

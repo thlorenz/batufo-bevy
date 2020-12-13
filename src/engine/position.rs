@@ -2,6 +2,8 @@ use bevy::{
     math::{Rect, Vec3},
     prelude::Transform,
 };
+use std::fmt;
+use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TilePosition {
@@ -39,6 +41,16 @@ impl TilePosition {
     #[allow(dead_code)]
     pub fn to_world_rect(&self, tile_size: u32) -> Rect<f32> {
         WorldPosition::from_tile_position(self, tile_size).to_rect(tile_size)
+    }
+}
+
+impl Display for TilePosition {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "({}+{}, {}+{})",
+            self.col, self.rel_x, self.row, self.rel_y
+        )
     }
 }
 
@@ -140,7 +152,7 @@ mod tests {
                     left,
                     bottom,
                     right: left + TILE_SIZE as f32,
-                    top: bottom + TILE_SIZE as f32
+                    top: bottom + TILE_SIZE as f32,
                 },
                 "to_world_rect"
             );

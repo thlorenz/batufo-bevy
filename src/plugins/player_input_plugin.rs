@@ -8,9 +8,9 @@ use crate::ecs::components::{HeadLights, Hero, Velocity};
 use crate::engine::physics::vector_for_rotation_y;
 
 #[derive(Default)]
-pub struct PlayerInput;
+pub struct PlayerInputPlugin;
 
-impl Plugin for PlayerInput {
+impl Plugin for PlayerInputPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_system(velocity_input_system)
             .add_system(light_input_system)
@@ -22,7 +22,7 @@ fn velocity_input_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Velocity, &Transform), With<Hero>>,
 ) {
-    let dv = 0.2;
+    let dv = 0.004;
     for (mut velocity, transform) in query.iter_mut() {
         let Vec3 { x, z, .. } = vector_for_rotation_y(transform.rotation);
         if keyboard_input.pressed(KeyCode::W) {

@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 bevy = { path = "../../libs/bevy", version = "0.3.0" }
+bevy_mod_picking = { path = "../../libs/bevy_mod_picking", version= "0.2.0" }
 
 
 # Compile all the *dependencies* in optimized release mode even if `--release` is not passed in

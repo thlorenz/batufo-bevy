@@ -66,7 +66,7 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut AppBuilder) {
-        let tile_size = 48;
+        let tile_size = 1;
         let render_scale = 0.1;
         let tile_render_size = render_scale * tile_size as f32;
         let render = GameRender {
