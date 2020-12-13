@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
 use crate::ecs::components::{Hero, Velocity};
+use crate::ecs::resources::TileState;
+use crate::engine::position::WorldPosition;
+use crate::plugins::game_plugin::GameRender;
 
 #[derive(Default)]
 pub struct PlayerMovementPlugin;
@@ -11,9 +14,15 @@ impl Plugin for PlayerMovementPlugin {
     }
 }
 
-fn player_movement_system(mut query: Query<(&Velocity, &mut Transform), With<Hero>>) {
+fn player_movement_system(
+    game_render: Res<GameRender>,
+    mut tile_state: ResMut<TileState>,
+    mut query: Query<(&Velocity, &mut Transform), With<Hero>>,
+) {
     for (velocity, mut transform) in query.iter_mut() {
         transform.translation += velocity.0;
+        let wp: WorldPosition = (&transform.translation).into();
+        tile_state.hero_tile = Some(wp.to_tile_position(game_render.tile_size));
     }
 }
 

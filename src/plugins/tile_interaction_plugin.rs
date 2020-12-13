@@ -2,19 +2,14 @@ use bevy::prelude::*;
 use bevy_mod_picking::{Group, PickState, PickingPlugin};
 
 use crate::ecs::components::FloorTile;
-use crate::engine::position::TilePosition;
-
-#[derive(Default)]
-struct TileInteractionState {
-    hovered_tile: Option<TilePosition>,
-}
+use crate::ecs::resources::TileState;
 
 #[derive(Default)]
 pub struct TileInteractionPlugin;
 
 impl Plugin for TileInteractionPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_resource(TileInteractionState::default())
+        app.add_resource(TileState::default())
             .add_plugin(PickingPlugin)
             .add_startup_system(config_pickstate_system)
             .add_system(toggle_pickstate_system)
@@ -35,7 +30,7 @@ fn toggle_pickstate_system(keyboard_input: Res<Input<KeyCode>>, mut pick_state: 
 
 fn highlight_tile_system(
     pick_state: Res<PickState>,
-    mut state: ResMut<TileInteractionState>,
+    mut state: ResMut<TileState>,
     mut query: Query<(Entity, &FloorTile, &mut Transform)>,
 ) {
     let top_entity = if let Some((entity, _intersection)) = pick_state.top(Group::default()) {

@@ -1,9 +1,10 @@
+use std::fmt;
+use std::fmt::{Display, Formatter};
+
 use bevy::{
     math::{Rect, Vec3},
     prelude::Transform,
 };
-use std::fmt;
-use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TilePosition {
@@ -117,6 +118,12 @@ impl Into<Vec3> for WorldPosition {
 impl Into<Transform> for WorldPosition {
     fn into(self) -> Transform {
         Transform::from_translation(self.into())
+    }
+}
+
+impl From<&Vec3> for WorldPosition {
+    fn from(vec: &Vec3) -> Self {
+        WorldPosition::new(vec.x, vec.y, vec.z)
     }
 }
 
