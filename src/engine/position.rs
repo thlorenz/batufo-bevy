@@ -1,12 +1,12 @@
 use std::fmt;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 use bevy::{
     math::{Rect, Vec3},
     prelude::Transform,
 };
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct TilePosition {
     pub col: u32,
     pub row: u32,
@@ -30,6 +30,10 @@ impl TilePosition {
         TilePosition::new(col, row, rel_x, rel_y)
     }
 
+    pub fn origin(col: u32, row: u32) -> TilePosition {
+        TilePosition::new(col, row, 0.0, 0.0)
+    }
+
     #[allow(dead_code)]
     pub fn to_world_position_top_left(&self, tile_size: u32) -> WorldPosition {
         WorldPosition::from_tile_position_top_left(self, tile_size)
@@ -43,15 +47,37 @@ impl TilePosition {
     pub fn to_world_rect(&self, tile_size: u32) -> Rect<f32> {
         WorldPosition::from_tile_position(self, tile_size).to_rect(tile_size)
     }
+
+    pub fn tile_idx(&self, nrows: u32) -> u32 {
+        self.row * nrows + self.col
+    }
+
+    pub fn from_tile_idx(nrows: u32, idx: u32) -> Self {
+        let row = idx / nrows;
+        let col = idx % nrows;
+        TilePosition::origin(col, row)
+    }
+
+    pub fn from_tile_idx_centered(nrows: u32, tile_size: u32, idx: u32) -> Self {
+        let row = idx / nrows;
+        let col = idx % nrows;
+        TilePosition::centered(col, row, tile_size)
+    }
 }
 
-impl Display for TilePosition {
+impl Debug for TilePosition {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "({}+{}, {}+{})",
             self.col, self.rel_x, self.row, self.rel_y
         )
+    }
+}
+
+impl Display for TilePosition {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.col, self.row)
     }
 }
 

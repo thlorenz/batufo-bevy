@@ -2,10 +2,8 @@ use bevy::prelude::*;
 use bevy_mod_picking::{Group, PickState, PickingPlugin};
 
 use crate::ecs::components::FloorTile;
+use crate::ecs::events::HoveredTileChangedEvent;
 use crate::ecs::resources::{EntityTile, TileState};
-use crate::engine::position::TilePosition;
-
-struct HoveredTileChangedEvent(EntityTile);
 
 #[derive(Default)]
 pub struct TileInteractionPlugin;
@@ -14,7 +12,6 @@ impl Plugin for TileInteractionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_resource(TileState::default())
             .add_event::<HoveredTileChangedEvent>()
-            .add_resource::<EventReader<HoveredTileChangedEvent>>(Default::default())
             .add_plugin(PickingPlugin)
             .add_startup_system(config_pickstate_system)
             .add_system(toggle_pickstate_system)
@@ -48,7 +45,6 @@ fn hovered_tile_changed_emitter(
                         || state.hovered_tile.as_ref().unwrap().position != floor_tile.0)
                 {
                     let entity_tile: EntityTile = (entity, floor_tile.0.clone()).into();
-                    println!("Hovering {:?}", &entity_tile);
 
                     state.hovered_tile = Some(entity_tile.clone());
                     events.send(HoveredTileChangedEvent(entity_tile));
@@ -63,7 +59,7 @@ fn hovered_tile_changed_emitter(
 struct CurrentHighlight(Option<Entity>);
 
 fn highlight_hovered_tile_system(
-    mut event_reader: ResMut<EventReader<HoveredTileChangedEvent>>,
+    mut event_reader: Local<EventReader<HoveredTileChangedEvent>>,
     events: Res<Events<HoveredTileChangedEvent>>,
     mut query: Query<&mut Transform, With<FloorTile>>,
     mut current_highlight: Local<CurrentHighlight>,
