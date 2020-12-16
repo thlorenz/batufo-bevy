@@ -81,6 +81,27 @@ impl Display for TilePosition {
     }
 }
 
+impl From<(i32, i32)> for TilePosition {
+    fn from((col, row): (i32, i32)) -> Self {
+        assert!(col >= 0);
+        assert!(row >= 0);
+        TilePosition::origin(col as u32, row as u32)
+    }
+}
+
+impl From<(f32, f32)> for TilePosition {
+    fn from((colf, rowf): (f32, f32)) -> Self {
+        assert!(colf >= 0.0);
+        assert!(rowf >= 0.0);
+
+        let col = colf as u32;
+        let row = rowf as u32;
+        let rel_x = colf - col as f32;
+        let rel_y = rowf - row as f32;
+        TilePosition::new(col as u32, row as u32, rel_x, rel_y)
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct WorldPosition {
     pub x: f32,

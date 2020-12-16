@@ -27,18 +27,22 @@ fn setup_hero(
 ) {
     let asset = &game_assets.hero;
     let texture_handle = asset_server.load(AssetPath::new(asset.path.clone(), None));
-    let material = materials.add(texture_handle.into());
 
     let mut pos = arena.player.to_world_position(game_render.tile_size);
     let size = game_render.tile_size as f32;
     pos.y = size * 0.8;
-    let transform: Transform = pos.into();
 
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box::new(size, size / 4.0, size * 1.5))),
-            material,
-            transform,
+            material: {
+                let material = materials.add(texture_handle.into());
+                material
+            },
+            transform: {
+                let transform: Transform = pos.into();
+                transform
+            },
             ..Default::default()
         })
         .with_children(|parent| {

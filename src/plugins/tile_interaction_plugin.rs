@@ -22,7 +22,7 @@ impl Plugin for TileInteractionPlugin {
 
 fn config_pickstate_system(mut pick_state: ResMut<PickState>) {
     // TODO: part of game config?
-    pick_state.enabled = true;
+    pick_state.enabled = false;
 }
 
 fn toggle_pickstate_system(keyboard_input: Res<Input<KeyCode>>, mut pick_state: ResMut<PickState>) {

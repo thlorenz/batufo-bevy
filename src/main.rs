@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::plugins::{
-    ArenaPlugin, CameraPlugin, GamePlugin, LightPlugin, PathFinderPlugin, PlayerInputPlugin,
-    PlayerMovementPlugin, PlayerRenderPlugin, TileInteractionPlugin,
+    ArenaPlugin, CameraPlugin, GamePlugin, GunTowerPlugin, LightPlugin, PathFinderPlugin,
+    PlayerInputPlugin, PlayerMovementPlugin, PlayerRenderPlugin, TileInteractionPlugin,
 };
 
 mod arena;
@@ -18,6 +18,7 @@ fn main() {
             Color::hex(BG).expect("Invalid Background Color"),
         ))
         .add_plugin(TileInteractionPlugin)
+        .add_plugin(PathFinderPlugin)
         .add_plugin(GamePlugin)
         .add_plugin(LightPlugin)
         .add_plugins(DefaultPlugins)
@@ -26,6 +27,6 @@ fn main() {
         .add_plugin(PlayerRenderPlugin)
         .add_plugin(PlayerInputPlugin)
         .add_plugin(PlayerMovementPlugin)
-        .add_plugin(PathFinderPlugin)
+        .add_plugin(GunTowerPlugin)
         .run();
 }
