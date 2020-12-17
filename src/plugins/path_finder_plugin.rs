@@ -106,17 +106,13 @@ impl LocalPath {
 
     fn empty_grid(ncols: usize, nrows: usize) -> Vec<Vec<bool>> {
         let mut grid: Vec<Vec<bool>> = Vec::with_capacity(ncols);
-        for _ in 0..ncols {
-            grid.push(LocalPath::empty_col(nrows));
-        }
+        grid.resize(ncols, LocalPath::empty_col(nrows));
         grid
     }
 
     fn empty_col(nrows: usize) -> Vec<bool> {
         let mut col = Vec::with_capacity(nrows);
-        for _ in 0..nrows {
-            col.push(false);
-        }
+        col.resize(nrows, false);
         col
     }
 
