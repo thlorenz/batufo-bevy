@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use bevy::utils::HashSet;
-use pathfinding::prelude::bfs;
+use pathfinding::prelude::*;
 
 use crate::arena::arena::Arena;
 use crate::ecs::events::HoveredTileChangedEvent;
@@ -35,10 +34,10 @@ fn path_to_hero_from_hovered_tile_system(
     path_finder: Res<PathFinder>,
     mut state: ResMut<TileState>,
 ) {
-    let mut path: Option<Vec<TilePosition>> = None;
+    let mut path: Option<Vec<(u32, u32)>> = None;
     if let Some(hero_tile) = &state.hero_tile {
         for event in hover_event_reader.iter(&hover_events) {
-            path = path_finder.path(false, &event.0.position, &hero_tile);
+            path = path_finder.path(false, event.0.position.col_row(), hero_tile.col_row());
         }
     }
     state.path_hovered_to_hero = path;
@@ -63,107 +62,103 @@ impl PathFinder {
         wp.into()
     }
 
+    pub fn translation_from_col_row(&self, (col, row): (u32, u32)) -> Vec3 {
+        let local_path = self.local_path.as_ref().expect(INIT_PATHFINDER_MSG);
+        self.translation_from_tile(&TilePosition::centered(col, row, local_path.tile_size))
+    }
+
     pub fn path(
         &self,
         allow_diagonals: bool,
-        start: &TilePosition,
-        end: &TilePosition,
-    ) -> Option<Vec<TilePosition>> {
+        start: (u32, u32),
+        end: (u32, u32),
+    ) -> Option<Vec<(u32, u32)>> {
         let local_path = self.local_path.as_ref().expect(INIT_PATHFINDER_MSG);
-        let start_idx = start.tile_idx(local_path.nrows);
-        let end_idx = end.tile_idx(local_path.nrows);
         let result = bfs(
-            &start_idx,
-            |p| local_path.moves(allow_diagonals, *p),
-            |p| *p == end_idx,
+            &start,
+            |&p| local_path.moves(allow_diagonals, p),
+            |&p| p == end,
         );
-        if let Some(result) = result {
-            let tiles: Vec<TilePosition> = result
-                .iter()
-                .skip(1)
-                .map(|idx| {
-                    TilePosition::from_tile_idx_centered(
-                        local_path.nrows,
-                        local_path.tile_size,
-                        *idx,
-                    )
-                })
-                .collect();
-            if tiles.is_empty() {
-                None
-            } else {
-                Some(tiles)
-            }
-        } else {
-            None
-        }
+        result
+            .map(|tiles| tiles.into_iter().skip(1).collect())
+            .filter(|tiles: &Vec<_>| !tiles.is_empty())
     }
 }
 
 struct LocalPath {
-    nrows: u32,
     tile_size: u32,
-    valid_tiles: HashSet<u32>,
+    valid_tiles: Vec<Vec<bool>>,
 }
 
 impl LocalPath {
     fn from_arena(arena: &Arena, tile_size: u32) -> Self {
-        let nrows = arena.nrows;
-        let valid_tiles: HashSet<u32> = arena
-            .floor_tiles
-            .iter()
-            .map(|tp| tp.tile_idx(nrows))
-            .collect();
+        let mut valid_tiles = LocalPath::empty_grid(arena.ncols as usize, arena.nrows as usize);
+        for tp in &arena.floor_tiles {
+            let ref mut col = valid_tiles[tp.col as usize];
+            col[tp.row as usize] = true;
+        }
+
         Self {
-            nrows,
             tile_size,
             valid_tiles,
         }
     }
 
-    fn moves(&self, allow_diagonals: bool, tile_idx: u32) -> Vec<u32> {
-        let mut xs: Vec<TilePosition> = Vec::new();
-        let TilePosition { col, row, .. } = TilePosition::from_tile_idx(self.nrows, tile_idx);
+    fn empty_grid(ncols: usize, nrows: usize) -> Vec<Vec<bool>> {
+        let mut grid: Vec<Vec<bool>> = Vec::with_capacity(ncols);
+        for _ in 0..ncols {
+            grid.push(LocalPath::empty_col(nrows));
+        }
+        grid
+    }
+
+    fn empty_col(nrows: usize) -> Vec<bool> {
+        let mut col = Vec::with_capacity(nrows);
+        for _ in 0..nrows {
+            col.push(false);
+        }
+        col
+    }
+
+    fn moves(&self, allow_diagonals: bool, tile: (u32, u32)) -> Vec<(u32, u32)> {
+        let (col, row) = tile;
+        let mut xs: Vec<(u32, u32)> = Vec::new();
         let has_left = col > 0;
         let has_bottom = row > 0;
         if has_left {
             if allow_diagonals {
                 // top-left
-                xs.push(TilePosition::origin(col - 1, row + 1));
+                xs.push((col - 1, row + 1));
             }
             // ctr-left
-            xs.push(TilePosition::origin(col - 1, row));
+            xs.push((col - 1, row));
         }
         if has_bottom {
             // btm-ctr
-            xs.push(TilePosition::origin(col, row - 1));
+            xs.push((col, row - 1));
             if allow_diagonals {
                 // btm-right
-                xs.push(TilePosition::origin(col + 1, row - 1));
+                xs.push((col + 1, row - 1));
             }
         }
         if has_left && has_bottom && allow_diagonals {
             // btm-left
-            xs.push(TilePosition::origin(col - 1, row - 1));
+            xs.push((col - 1, row - 1));
         }
 
         // top-ctr
-        xs.push(TilePosition::origin(col, row + 1));
+        xs.push((col, row + 1));
 
         if allow_diagonals {
             // top-right
-            xs.push(TilePosition::origin(col + 1, row + 1));
+            xs.push((col + 1, row + 1));
         }
         // ctr-right
-        xs.push(TilePosition::origin(col + 1, row));
+        xs.push((col + 1, row));
 
-        let move_idxs = xs
-            .iter()
-            .map(|tp| tp.tile_idx(self.nrows))
-            .filter(|idx| self.valid_tiles.contains(idx))
-            .collect();
-
-        move_idxs
+        xs.into_iter()
+            .filter(|&(col, row)| self.valid_tiles[col as usize][row as usize])
+            .collect()
     }
 }
 
@@ -180,13 +175,17 @@ mod test {
     }
 
     #[test]
-    fn player_to_the_left() {
+    fn find_path_1() {
         let path_finder = init_face_off_path_finder();
-        let path = path_finder.path(false, &(11, 19).into(), &(11, 21).into());
-        let expected: Vec<TilePosition> = vec![
-            (11.0 + 0.5, 20.0 + 0.5).into(),
-            (11.0 + 0.5, 21.0 + 0.5).into(),
-        ];
+        let path = path_finder.path(false, (11, 19), (11, 21));
+        let expected: Vec<(u32, u32)> = vec![(11, 20), (11, 21)];
         assert_eq!(path, Some(expected));
+    }
+
+    #[test]
+    fn find_path_2() {
+        let path_finder = init_face_off_path_finder();
+        let path = path_finder.path(false, (5, 25), (62, 25));
+        assert_eq!(path.map(|x| x.len()), Some(71));
     }
 }

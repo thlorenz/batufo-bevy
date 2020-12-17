@@ -77,12 +77,13 @@ fn tick_gun_tower(
             let current_tile = pathfinder.tile_from_translation(&tower_transform.translation);
             for transform in hero_query.iter() {
                 let hero_tile = pathfinder.tile_from_translation(&transform.translation);
-                let path_to_player = pathfinder.path(false, &current_tile, &hero_tile);
-                if let Some(ref path) = path_to_player {
+                let path_to_player =
+                    pathfinder.path(false, current_tile.col_row(), hero_tile.col_row());
+                if let Some(path) = path_to_player {
                     let y = tower_transform.translation.y;
                     tower_transform.translation = {
                         let mut translation =
-                            pathfinder.translation_from_tile(path.first().unwrap());
+                            pathfinder.translation_from_col_row(*path.first().unwrap());
                         translation.y = y;
                         translation
                     };

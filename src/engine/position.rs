@@ -24,6 +24,10 @@ impl TilePosition {
         }
     }
 
+    pub fn col_row(&self) -> (u32, u32) {
+        (self.col, self.row)
+    }
+
     pub fn centered(col: u32, row: u32, tile_size: u32) -> TilePosition {
         let rel_x = tile_size as f32 / 2.0;
         let rel_y = tile_size as f32 / 2.0;
@@ -48,19 +52,18 @@ impl TilePosition {
         WorldPosition::from_tile_position(self, tile_size).to_rect(tile_size)
     }
 
-    pub fn tile_idx(&self, nrows: u32) -> u32 {
-        self.row * nrows + self.col
+    pub fn tile_idx(&self, ncols: u32) -> u32 {
+        self.row * ncols + self.col
     }
 
-    pub fn from_tile_idx(nrows: u32, idx: u32) -> Self {
-        let row = idx / nrows;
-        let col = idx % nrows;
+    pub fn from_tile_idx(ncols: u32, idx: u32) -> Self {
+        let row = idx / ncols;
+        let col = if row == 0 { idx } else { idx % row };
         TilePosition::origin(col, row)
     }
 
-    pub fn from_tile_idx_centered(nrows: u32, tile_size: u32, idx: u32) -> Self {
-        let row = idx / nrows;
-        let col = idx % nrows;
+    pub fn from_tile_idx_centered(ncols: u32, tile_size: u32, idx: u32) -> Self {
+        let TilePosition { col, row, .. } = TilePosition::from_tile_idx(ncols, idx);
         TilePosition::centered(col, row, tile_size)
     }
 }
@@ -102,6 +105,13 @@ impl From<(f32, f32)> for TilePosition {
     }
 }
 
+impl Into<(u32, u32)> for &TilePosition {
+    fn into(self: Self) -> (u32, u32) {
+        let TilePosition { col, row, .. } = self;
+        (*col, *row)
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct WorldPosition {
     pub x: f32,
@@ -132,12 +142,14 @@ impl WorldPosition {
     // When converting to tile position we transpose 3D positions to a 2D
     #[allow(dead_code)]
     pub fn to_tile_position(&self, tile_size: u32) -> TilePosition {
+        // TODO: fix this
         let tile_size = tile_size as f32;
         let col = (self.x / tile_size).floor() as u32;
-        let row = ((-self.z) / tile_size).floor() as u32;
+        let row = (self.z / tile_size).floor() as i32;
         let rel_x = self.x % tile_size;
-        let rel_y = (-self.z) % tile_size;
-        TilePosition::new(col, row, rel_x, rel_y)
+        let rel_y = self.z % tile_size;
+        assert!(row <= 0);
+        TilePosition::new(col, (-row) as u32, rel_x, -rel_y)
     }
 
     pub fn to_rect(&self, tile_size: u32) -> Rect<f32> {
@@ -195,7 +207,7 @@ mod tests {
             let tp = TilePosition::new(10, 10, 10.0, 10.0);
             assert_eq!(
                 tp.to_world_position(TILE_SIZE),
-                WorldPosition::new(210.0, 0.0, 210.0),
+                WorldPosition::new(210.0, 0.0, -210.0),
                 "to_world_position"
             );
             let left = 200.;
