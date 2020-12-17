@@ -50,7 +50,7 @@ pub struct PathFinder {
 
 impl PathFinder {
     // TODO: this kind of conversion function should live in its own resource
-    pub fn tile_from_translation(&self, pos: &Vec3) -> TilePosition {
+    pub fn tile_from_translation(&self, pos: &Vec3) -> Option<TilePosition> {
         let wp: WorldPosition = pos.into();
         let local_path = self.local_path.as_ref().expect(INIT_PATHFINDER_MSG);
         wp.to_tile_position(local_path.tile_size)

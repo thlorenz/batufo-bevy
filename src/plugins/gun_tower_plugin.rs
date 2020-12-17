@@ -74,21 +74,25 @@ fn tick_gun_tower(
 ) {
     for (mut timer, mut tower_transform) in tower_query.iter_mut() {
         if timer.tick(time.delta_seconds()).just_finished() {
-            let current_tile = pathfinder.tile_from_translation(&tower_transform.translation);
+            let current_tile = pathfinder
+                .tile_from_translation(&tower_transform.translation)
+                .expect("gun tower should never leave tilemap");
             for transform in hero_query.iter() {
                 let hero_tile = pathfinder.tile_from_translation(&transform.translation);
-                let path_to_player =
-                    pathfinder.path(false, current_tile.col_row(), hero_tile.col_row());
-                if let Some(path) = path_to_player {
-                    let y = tower_transform.translation.y;
-                    tower_transform.translation = {
-                        let mut translation =
-                            pathfinder.translation_from_col_row(*path.first().unwrap());
-                        translation.y = y;
-                        translation
-                    };
-                } else {
-                    println!("cannot find path from {} to {}", &current_tile, &hero_tile);
+                if let Some(hero_tile) = &hero_tile {
+                    let path_to_player =
+                        pathfinder.path(false, current_tile.col_row(), hero_tile.col_row());
+                    if let Some(path) = path_to_player {
+                        let y = tower_transform.translation.y;
+                        tower_transform.translation = {
+                            let mut translation =
+                                pathfinder.translation_from_col_row(*path.first().unwrap());
+                            translation.y = y;
+                            translation
+                        };
+                    } else {
+                        println!("cannot find path from {} to {}", &current_tile, &hero_tile);
+                    }
                 }
             }
         }

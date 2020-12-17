@@ -141,15 +141,19 @@ impl WorldPosition {
 
     // When converting to tile position we transpose 3D positions to a 2D
     #[allow(dead_code)]
-    pub fn to_tile_position(&self, tile_size: u32) -> TilePosition {
-        // TODO: fix this
-        let tile_size = tile_size as f32;
-        let col = (self.x / tile_size).floor() as u32;
-        let row = (self.z / tile_size).floor() as i32;
-        let rel_x = self.x % tile_size;
-        let rel_y = self.z % tile_size;
-        assert!(row <= 0);
-        TilePosition::new(col, (-row) as u32, rel_x, -rel_y)
+    pub fn to_tile_position(&self, tile_size: u32) -> Option<TilePosition> {
+        if self.x < 0.0 || self.z > 0.0 {
+            None
+        } else {
+            let z = -self.z;
+
+            let tile_size = tile_size as f32;
+            let col = (self.x / tile_size).floor() as u32;
+            let row = (z / tile_size).floor() as u32;
+            let rel_x = self.x % tile_size;
+            let rel_y = z % tile_size;
+            Some(TilePosition::new(col, row, rel_x, rel_y))
+        }
     }
 
     pub fn to_rect(&self, tile_size: u32) -> Rect<f32> {
@@ -229,28 +233,31 @@ mod tests {
             let wp0 = WorldPosition {
                 x: 210.0,
                 y: 0.0,
-                z: 240.0,
+                z: -240.0,
             };
             let tp = wp0.to_tile_position(TILE_SIZE);
-            let wp1 = tp.to_world_position(TILE_SIZE);
+            assert!(tp.is_some());
+            let wp1 = tp.unwrap().to_world_position(TILE_SIZE);
             assert_eq!(wp0, wp1);
 
             let wp0 = WorldPosition {
                 x: 240.0,
                 y: 0.0,
-                z: 241.0,
+                z: -241.0,
             };
             let tp = wp0.to_tile_position(TILE_SIZE);
-            let wp1 = tp.to_world_position(TILE_SIZE);
+            assert!(tp.is_some());
+            let wp1 = tp.unwrap().to_world_position(TILE_SIZE);
             assert_eq!(wp0, wp1);
 
             let wp0 = WorldPosition {
                 x: 10.0,
                 y: 0.0,
-                z: 21.0,
+                z: -21.0,
             };
             let tp = wp0.to_tile_position(5);
-            let wp1 = tp.to_world_position(5);
+            assert!(tp.is_some());
+            let wp1 = tp.unwrap().to_world_position(5);
             assert_eq!(wp0, wp1);
         }
     }

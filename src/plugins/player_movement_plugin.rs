@@ -22,7 +22,7 @@ fn player_movement_system(
     for (velocity, mut transform) in query.iter_mut() {
         transform.translation += velocity.0;
         let wp: WorldPosition = (&transform.translation).into();
-        tile_state.hero_tile = Some(wp.to_tile_position(game_render.tile_size));
+        tile_state.hero_tile = wp.to_tile_position(game_render.tile_size);
     }
 }
 
