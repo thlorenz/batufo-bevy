@@ -1,2 +1,4 @@
 pub mod physics;
-pub mod position;
+mod position;
+
+pub(crate) use position::*;

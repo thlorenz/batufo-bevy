@@ -1,7 +1,7 @@
 use bevy::{asset::AssetPath, prelude::*};
 
 use crate::{
-    arena::arena::Arena,
+    arena::Arena,
     ecs::components::{HeadLights, Hero, Velocity},
 };
 

@@ -3,11 +3,11 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 
 use crate::{
+    ai::find_path,
     animations::{Movement, MovementAxis, RollingBoxAnimation, RotationAxis, Spin},
-    arena::arena::Arena,
-    ecs::components::Hero,
-    engine::position::TilePosition,
-    plugins::path_finder_plugin::PathFinder,
+    arena::{Arena, Tilepath},
+    ecs::{components::Hero, resources::PositionConverter},
+    engine::TilePosition,
 };
 
 use super::game_plugin::{GameAssets, GameRender};
@@ -80,7 +80,8 @@ fn gun_tower_setup(
 fn follow_hero_system(
     time: Res<Time>,
     game_render: Res<GameRender>,
-    pathfinder: Res<PathFinder>,
+    converter: Res<PositionConverter>,
+    tilepath: Res<Tilepath>,
     mut tower_query: Query<(&mut Transform, &mut GunTower)>,
     hero_query: Query<&Transform, With<Hero>>,
 ) {
@@ -91,7 +92,8 @@ fn follow_hero_system(
                 let hero_transform = hero_query.iter().next();
                 if let Some(hero_transform) = hero_transform {
                     if let (tower_tile, Some(path)) = path_to_hero(
-                        &pathfinder,
+                        &converter,
+                        &tilepath,
                         &tower_transform.translation,
                         &hero_transform.translation,
                     ) {
@@ -100,7 +102,7 @@ fn follow_hero_system(
                             let movement_axis =
                                 MovementAxis::from_move_xz(tower_tile.col_row(), (col, row));
                             let rotation_axis = RotationAxis::from_movement_axis(&movement_axis);
-                            let mut translation = pathfinder.translation_from_col_row((col, row));
+                            let mut translation = converter.translation_from_col_row((col, row));
                             translation.y = gun_tower.center_y;
 
                             RollingBoxAnimation {
@@ -133,16 +135,27 @@ fn follow_hero_system(
 }
 
 fn path_to_hero(
-    pathfinder: &PathFinder,
+    converter: &PositionConverter,
+    tilepath: &Tilepath,
     tower_pos: &Vec3,
     hero_pos: &Vec3,
 ) -> (TilePosition, Option<Vec<(u32, u32)>>) {
-    let tower_tile = pathfinder
+    let tower_tile = converter
         .tile_from_translation(tower_pos)
         .expect("gun tower should never leave tilemap");
-    let hero_tile = pathfinder.tile_from_translation(hero_pos);
+
+    let hero_tile = converter.tile_from_translation(hero_pos);
+
     let path = hero_tile
-        .map(|hero_tile| pathfinder.path(false, tower_tile.col_row(), hero_tile.col_row()))
+        .map(|hero_tile| {
+            find_path(
+                &tilepath.valid_tiles,
+                false,
+                tower_tile.col_row(),
+                hero_tile.col_row(),
+            )
+        })
         .flatten();
+
     (tower_tile, path)
 }

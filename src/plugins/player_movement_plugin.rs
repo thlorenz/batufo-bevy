@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::ecs::components::{Hero, Velocity};
 use crate::ecs::resources::TileState;
-use crate::engine::position::WorldPosition;
+use crate::engine::WorldPosition;
 use crate::plugins::game_plugin::GameRender;
 
 #[derive(Default)]

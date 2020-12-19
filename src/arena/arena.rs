@@ -1,6 +1,6 @@
 use crate::arena::levels::Levels;
 use crate::arena::tilemap::{needs_floor_tile, Tile, Tilemap};
-use crate::engine::position::TilePosition;
+use crate::engine::TilePosition;
 use std::error::Error;
 use std::fmt;
 

@@ -2,7 +2,10 @@ use std::{path::PathBuf, process};
 
 use bevy::prelude::*;
 
-use crate::arena::arena::Arena;
+use crate::{
+    arena::{Arena, Tilepath},
+    ecs::resources::PositionConverter,
+};
 
 pub struct GameRender {
     pub tile_size: u32,
@@ -81,6 +84,8 @@ impl Plugin for GamePlugin {
             .init_resource::<GameAssets>()
             .init_resource::<GameCameras>()
             .add_resource(render)
+            .add_resource(PositionConverter::new(tile_size))
+            .add_resource(Tilepath::from_arena(&arena))
             .add_resource(WindowDescriptor {
                 title: "batufo".to_string(),
                 width: 1024,

@@ -1,8 +1,7 @@
 use bevy::{asset::AssetPath, prelude::*};
 use bevy_mod_picking::*;
 
-use crate::arena::arena::Arena;
-use crate::ecs::components::FloorTile;
+use crate::{arena::Arena, ecs::components::FloorTile};
 
 use super::game_plugin::{GameAssets, GameRender};
 

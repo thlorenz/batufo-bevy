@@ -1,4 +1,8 @@
-pub mod arena;
-pub mod builtins;
+mod arena;
+mod builtins;
 pub mod levels;
-pub mod tilemap;
+mod tilemap;
+mod tilepath;
+
+pub(crate) use arena::*;
+pub(crate) use tilepath::*;

@@ -1,6 +1,6 @@
 use bevy::math::Vec3;
 
-use crate::engine::position::TilePosition;
+use crate::engine::TilePosition;
 
 #[derive(Default)]
 pub struct Hero;
