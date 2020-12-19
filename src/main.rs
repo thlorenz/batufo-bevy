@@ -5,6 +5,7 @@ use crate::plugins::{
     PlayerInputPlugin, PlayerMovementPlugin, PlayerRenderPlugin, TileInteractionPlugin,
 };
 
+mod animations;
 mod arena;
 mod ecs;
 mod engine;

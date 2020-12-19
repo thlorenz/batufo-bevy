@@ -178,7 +178,19 @@ impl Into<Vec3> for WorldPosition {
     }
 }
 
+impl Into<Vec3> for &WorldPosition {
+    fn into(self) -> Vec3 {
+        Vec3::new(self.x, self.y, self.z)
+    }
+}
+
 impl Into<Transform> for WorldPosition {
+    fn into(self) -> Transform {
+        Transform::from_translation(self.into())
+    }
+}
+
+impl Into<Transform> for &WorldPosition {
     fn into(self) -> Transform {
         Transform::from_translation(self.into())
     }
