@@ -13,10 +13,10 @@ impl Plugin for TileInteractionPlugin {
         app.add_resource(TileState::default())
             .add_event::<HoveredTileChangedEvent>()
             .add_plugin(PickingPlugin)
-            .add_startup_system(config_pickstate_system)
-            .add_system(toggle_pickstate_system)
-            .add_system(hovered_tile_changed_emitter)
-            .add_system(highlight_hovered_tile_system);
+            .add_startup_system(config_pickstate_system.system())
+            .add_system(toggle_pickstate_system.system())
+            .add_system(hovered_tile_changed_emitter.system())
+            .add_system(highlight_hovered_tile_system.system());
     }
 }
 

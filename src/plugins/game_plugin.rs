@@ -88,8 +88,8 @@ impl Plugin for GamePlugin {
             .add_resource(Tilepath::from_arena(&arena))
             .add_resource(WindowDescriptor {
                 title: "batufo".to_string(),
-                width: 1024,
-                height: 768,
+                width: 1024.0,
+                height: 768.0,
                 vsync: false,
                 resizable: true,
                 decorations: false,
@@ -98,7 +98,7 @@ impl Plugin for GamePlugin {
                 ..Default::default()
             })
             .add_resource(arena)
-            .add_system(exit_game_system);
+            .add_system(exit_game_system.system());
     }
 }
 

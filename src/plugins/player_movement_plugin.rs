@@ -10,7 +10,7 @@ pub struct PlayerMovementPlugin;
 
 impl Plugin for PlayerMovementPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(player_movement_system);
+        app.add_system(player_movement_system.system());
     }
 }
 

@@ -5,7 +5,7 @@ pub struct LightPlugin;
 
 impl Plugin for LightPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(setup_ambient_light_system);
+        app.add_startup_system(setup_ambient_light_system.system());
     }
 }
 

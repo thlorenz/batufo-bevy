@@ -38,8 +38,8 @@ pub struct GunTowerPlugin;
 
 impl Plugin for GunTowerPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(gun_tower_setup)
-            .add_system(follow_hero_system);
+        app.add_startup_system(gun_tower_setup.system())
+            .add_system(follow_hero_system.system());
     }
 }
 

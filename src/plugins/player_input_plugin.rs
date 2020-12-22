@@ -12,9 +12,9 @@ pub struct PlayerInputPlugin;
 
 impl Plugin for PlayerInputPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(velocity_input_system)
-            .add_system(light_input_system)
-            .add_system(yaw_input_system);
+        app.add_system(velocity_input_system.system())
+            .add_system(light_input_system.system())
+            .add_system(yaw_input_system.system());
     }
 }
 

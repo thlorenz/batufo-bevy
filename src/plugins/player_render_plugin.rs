@@ -12,7 +12,7 @@ pub struct PlayerRenderPlugin;
 
 impl Plugin for PlayerRenderPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(setup_hero);
+        app.add_startup_system(setup_hero.system());
     }
 }
 

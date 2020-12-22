@@ -11,7 +11,7 @@ pub struct PathFinderPlugin;
 
 impl Plugin for PathFinderPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(path_to_hero_from_hovered_tile_system);
+        app.add_system(path_to_hero_from_hovered_tile_system.system());
     }
 }
 

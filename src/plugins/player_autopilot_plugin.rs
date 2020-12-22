@@ -5,7 +5,7 @@ pub struct PlayerAutopilotPlugin;
 
 impl Plugin for PlayerAutopilotPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(player_autopilot_system);
+        app.add_system(player_autopilot_system.system());
     }
 }
 
