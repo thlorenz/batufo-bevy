@@ -15,7 +15,6 @@ mod game_plugin;
 mod gun_tower_plugin;
 mod light_plugin;
 mod path_finder_plugin;
-mod player_autopilot_plugin;
 mod player_input_plugin;
 mod player_movement_plugin;
 mod player_render_plugin;

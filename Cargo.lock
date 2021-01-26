@@ -244,6 +244,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_mod_picking",
+ "crisscross",
  "pathfinding",
 ]
 
@@ -1113,6 +1114,10 @@ checksum = "81156fece84ab6a9f2afdb109ce3ae577e42b1228441eded99bd77f627953b1a"
 dependencies = [
  "cfg-if 1.0.0",
 ]
+
+[[package]]
+name = "crisscross"
+version = "0.1.0"
 
 [[package]]
 name = "crossbeam-channel"

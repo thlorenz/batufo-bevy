@@ -66,6 +66,16 @@ impl TilePosition {
         let TilePosition { col, row, .. } = TilePosition::from_tile_idx(ncols, idx);
         TilePosition::centered(col, row, tile_size)
     }
+
+    pub fn axes(&self) -> (f32, f32) {
+        (self.col as f32 + self.rel_x, self.row as f32 + self.rel_y)
+    }
+
+    pub fn delta_to(&self, target: &TilePosition) -> (f32, f32) {
+        let (x1, y1) = self.axes();
+        let (x2, y2) = target.axes();
+        (x2 - x1, y2 - y1)
+    }
 }
 
 impl Debug for TilePosition {
@@ -109,6 +119,18 @@ impl Into<(u32, u32)> for &TilePosition {
     fn into(self: Self) -> (u32, u32) {
         let TilePosition { col, row, .. } = self;
         (*col, *row)
+    }
+}
+
+impl Into<((u32, f32), (u32, f32))> for &TilePosition {
+    fn into(self: Self) -> ((u32, f32), (u32, f32)) {
+        let TilePosition {
+            col,
+            row,
+            rel_x,
+            rel_y,
+        } = self;
+        ((*col, *rel_x), (*row, *rel_y))
     }
 }
 

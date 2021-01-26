@@ -11,6 +11,7 @@ mod arena;
 mod ecs;
 mod engine;
 mod plugins;
+mod utils;
 
 const BG: &str = "000000"; // "1E1C32"
 

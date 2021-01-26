@@ -8,6 +8,7 @@ edition = "2018"
 bevy = { path = "../../libs/bevy", version = "0.4.0" }
 bevy_mod_picking = { path = "../../libs/bevy_mod_picking", version= "0.3.1" }
 pathfinding = "2.1.1"
+crisscross = { path = "../crisscross", version = "0.1.0" }
 
 
 # Compile all the *dependencies* in optimized release mode even if `--release` is not passed in
