@@ -4,34 +4,18 @@ use bevy::prelude::*;
 
 use crate::{
     ai::find_path,
-    animations::{Movement, MovementAxis, RollingBoxAnimation, RotationAxis, Spin},
+    animations::{
+        Movement, MovementAnimation, MovementAxis, RollingBoxAnimation, RotationAxis, Spin,
+    },
     arena::{Arena, Tilepath},
-    ecs::{components::Hero, resources::PositionConverter},
+    ecs::{
+        components::{Hero, HeroFollower, MovementState, OrthogonalMovement, ProjectileSpawner},
+        resources::{PositionConverter, Sniper},
+    },
     engine::TilePosition,
 };
 
 use super::game_plugin::{GameAssets, GameRender};
-
-enum GunTowerState {
-    Idle,
-    Moving(RollingBoxAnimation),
-}
-
-pub struct GunTower {
-    step_factor: f32,
-    center_y: f32,
-    state: GunTowerState,
-}
-
-impl Default for GunTower {
-    fn default() -> Self {
-        GunTower {
-            step_factor: 1.5,
-            center_y: 0.5,
-            state: GunTowerState::Idle,
-        }
-    }
-}
 
 #[derive(Default)]
 pub struct GunTowerPlugin;
@@ -39,7 +23,8 @@ pub struct GunTowerPlugin;
 impl Plugin for GunTowerPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_startup_system(gun_tower_setup.system())
-            .add_system(follow_hero_system.system());
+            .add_system(follow_hero_system.system())
+            .add_system(shoot_hero_system.system());
     }
 }
 
@@ -71,10 +56,27 @@ fn gun_tower_setup(
             },
             ..Default::default()
         })
-        .with(GunTower {
+        .with(OrthogonalMovement {
             center_y: (&pos).y.clone(),
             ..Default::default()
-        });
+        })
+        .with(HeroFollower)
+        .with(ProjectileSpawner { range: 15.0 });
+}
+
+fn shoot_hero_system(
+    sniper: Res<Sniper>,
+    tilepath: Res<Tilepath>,
+    shooter_query: Query<(&Transform, &ProjectileSpawner), With<HeroFollower>>,
+    hero_query: Query<&Transform, With<Hero>>,
+) {
+    for (transform, spawner) in shooter_query.iter() {
+        let hero_transform = hero_query.iter().next().unwrap();
+        let shot = sniper.find_shot(&tilepath, &transform, &hero_transform, Some(spawner.range));
+        if let Some(shot) = shot {
+            println!("shot: {:#?}", shot);
+        }
+    }
 }
 
 fn follow_hero_system(
@@ -82,32 +84,32 @@ fn follow_hero_system(
     game_render: Res<GameRender>,
     converter: Res<PositionConverter>,
     tilepath: Res<Tilepath>,
-    mut tower_query: Query<(&mut Transform, &mut GunTower)>,
+    mut follower_query: Query<(&mut Transform, &mut OrthogonalMovement), With<HeroFollower>>,
     hero_query: Query<&Transform, With<Hero>>,
 ) {
-    for (mut tower_transform, mut gun_tower) in tower_query.iter_mut() {
-        let step_factor = gun_tower.step_factor;
-        match gun_tower.state {
-            GunTowerState::Idle => {
+    for (mut follower_transform, mut follower_movement) in follower_query.iter_mut() {
+        let step_factor = follower_movement.step_factor;
+        match follower_movement.state {
+            MovementState::Idle => {
                 let hero_transform = hero_query.iter().next();
                 if let Some(hero_transform) = hero_transform {
                     if let (tower_tile, Some(path)) = path_to_hero(
                         &converter,
                         &tilepath,
-                        &tower_transform.translation,
+                        &follower_transform.translation,
                         &hero_transform.translation,
                     ) {
-                        gun_tower.state = GunTowerState::Moving({
+                        follower_movement.state = MovementState::Moving({
                             let (col, row) = path.first().map(|&(col, row)| (col, row)).unwrap();
                             let movement_axis =
                                 MovementAxis::from_move_xz(tower_tile.col_row(), (col, row));
                             let rotation_axis = RotationAxis::from_movement_axis(&movement_axis);
                             let mut translation = converter.translation_from_col_row((col, row));
-                            translation.y = gun_tower.center_y;
+                            translation.y = follower_movement.center_y;
 
-                            RollingBoxAnimation {
+                            let rolling_box_animation = RollingBoxAnimation {
                                 movement: Movement::from_start_end(
-                                    tower_transform.translation,
+                                    follower_transform.translation,
                                     translation,
                                     movement_axis,
                                 ),
@@ -117,17 +119,22 @@ fn follow_hero_system(
                                     PI / 2.0,
                                 ),
                                 percent_complete: 0.0,
-                            }
+                            };
+                            MovementAnimation::Rolling(rolling_box_animation)
                         });
                     }
                 }
             }
-            GunTowerState::Moving(ref mut moving) => {
+            MovementState::Moving(ref mut movement) => {
                 let step_percent = time.delta_seconds() * step_factor;
-                if moving.step_percent(&mut tower_transform, step_percent) {
-                    gun_tower.state = GunTowerState::Idle;
-                    let size = game_render.tile_size as f32;
-                    tower_transform.translation.y = size * 0.6;
+                match movement {
+                    MovementAnimation::Rolling(rolling) => {
+                        if rolling.step_percent(&mut follower_transform, step_percent) {
+                            follower_movement.state = MovementState::Idle;
+                            let size = game_render.tile_size as f32;
+                            follower_transform.translation.y = size * 0.6;
+                        }
+                    }
                 }
             }
         };

@@ -3,8 +3,9 @@ use std::{path::PathBuf, process};
 use bevy::prelude::*;
 
 use crate::{
+    ai::create_tile_caster,
     arena::{Arena, Tilepath},
-    ecs::resources::PositionConverter,
+    ecs::resources::{PositionConverter, Sniper},
 };
 
 pub struct GameRender {
@@ -67,6 +68,7 @@ impl Default for GameCameras {
 #[derive(Default)]
 pub struct GamePlugin;
 
+const SMALL: bool = true;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut AppBuilder) {
         let tile_size = 1;
@@ -77,22 +79,33 @@ impl Plugin for GamePlugin {
             tile_render_size,
         };
 
+        let converter = PositionConverter::new(tile_size);
         let arena =
             Arena::for_level("face off", render.tile_size).expect("FATAL: unable to create arena");
 
+        let tile_path = Tilepath::from_arena(&arena);
+        let tile_caster = create_tile_caster(arena.ncols, arena.nrows, tile_size as f32);
+        let sniper = Sniper::new(tile_caster, converter.clone());
+
+        let (width, height) = if SMALL {
+            (640.0, 480.0)
+        } else {
+            (1024.0, 768.0)
+        };
         app.init_resource::<GameCameras>()
             .init_resource::<GameAssets>()
             .init_resource::<GameCameras>()
+            .add_resource(sniper)
             .add_resource(render)
-            .add_resource(PositionConverter::new(tile_size))
-            .add_resource(Tilepath::from_arena(&arena))
+            .add_resource(converter)
+            .add_resource(tile_path)
             .add_resource(WindowDescriptor {
                 title: "batufo".to_string(),
-                width: 1024.0,
-                height: 768.0,
+                width,
+                height,
                 vsync: false,
                 resizable: true,
-                decorations: false,
+                decorations: true,
                 cursor_locked: false,
                 cursor_visible: true,
                 ..Default::default()

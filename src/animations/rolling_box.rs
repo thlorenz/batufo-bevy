@@ -74,6 +74,10 @@ impl Movement {
     }
 }
 
+pub enum MovementAnimation {
+    Rolling(RollingBoxAnimation),
+}
+
 pub struct RollingBoxAnimation {
     pub movement: Movement,
     pub spin: Spin,

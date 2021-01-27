@@ -2,19 +2,9 @@ use std::fmt::Display;
 
 use crisscross::{Grid, TileRaycaster};
 
-use crate::{
-    arena::{Tilemap, Tilepath},
-    engine::TilePosition,
-};
+use crate::{arena::Tilepath, engine::TilePosition};
 
-#[allow(dead_code)]
-pub fn create_tile_caster(tile_map: &Tilemap) -> TileRaycaster {
-    let Tilemap {
-        tile_size,
-        nrows,
-        ncols,
-        ..
-    } = *tile_map;
+pub fn create_tile_caster(ncols: u32, nrows: u32, tile_size: f32) -> TileRaycaster {
     let grid = Grid::new(ncols, nrows, tile_size as f32);
     TileRaycaster::new(grid)
 }
@@ -27,10 +17,10 @@ fn convert_position(tp: &TilePosition) -> crisscross::TilePosition {
 #[derive(Debug)]
 pub struct Shot {
     /// Angle in radians
-    angle: f32,
+    pub angle: f32,
     /// Relative distance from origin to target.
     /// This is the same as the global distance for tile size 1.
-    distance: f32,
+    pub distance: f32,
 }
 
 impl Display for Shot {
@@ -105,14 +95,9 @@ mod tests {
     #[test]
     fn clear_shot() {
         let (ncols, nrows) = (4, 4);
-        let tile_map = Tilemap {
-            tile_size: 1,
-            tiles: vec![],
-            ncols,
-            nrows,
-        };
+        let tile_size = 1.0;
         let tile_path = Tilepath::all_valid(ncols as usize, nrows as usize);
-        let tc = create_tile_caster(&tile_map);
+        let tc = create_tile_caster(ncols, nrows, tile_size);
 
         let origin = TilePosition::new(0, 0, 0.5, 0.5);
         let target = TilePosition::new(1, 1, 0.5, 0.5);
@@ -126,16 +111,11 @@ mod tests {
     #[test]
     fn obstacled_shot() {
         let (ncols, nrows) = (8, 8);
-        let tile_map = Tilemap {
-            tile_size: 1,
-            tiles: vec![],
-            ncols,
-            nrows,
-        };
+        let tile_size = 1.0;
         let tile_path =
             Tilepath::with_invalids(ncols as usize, nrows as usize, vec![(0, 4), (4, 0), (6, 6)]);
 
-        let tc = create_tile_caster(&tile_map);
+        let tc = create_tile_caster(ncols, nrows, tile_size);
 
         let origin = TilePosition::new(0, 0, 0.5, 0.5);
         let target = TilePosition::new(1, 1, 0.5, 0.5);

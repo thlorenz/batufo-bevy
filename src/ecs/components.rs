@@ -2,11 +2,11 @@ use bevy::math::Vec3;
 
 use crate::engine::TilePosition;
 
-#[derive(Default)]
-pub struct Hero;
+mod orthogonal_mover;
+pub use orthogonal_mover::*;
 
 #[derive(Default)]
-pub struct Speed;
+pub struct Hero;
 
 #[derive(Default)]
 pub struct Velocity(pub Vec3);
@@ -15,3 +15,9 @@ pub struct Velocity(pub Vec3);
 pub struct HeadLights(pub bool);
 
 pub struct FloorTile(pub TilePosition);
+
+pub struct ProjectileSpawner {
+    pub range: f32,
+}
+
+pub struct HeroFollower;
