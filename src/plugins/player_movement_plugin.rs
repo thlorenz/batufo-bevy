@@ -10,19 +10,26 @@ pub struct PlayerMovementPlugin;
 
 impl Plugin for PlayerMovementPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_system(player_movement_system.system());
+        app.add_system(apply_velocity.system())
+            .add_system(update_player_tile.system());
     }
 }
 
-fn player_movement_system(
-    game_render: Res<GameRender>,
-    mut tile_state: ResMut<TileState>,
-    mut query: Query<(&Velocity, &mut Transform), With<Hero>>,
-) {
+// TODO(thlorenz): separate plugin and needs dt
+fn apply_velocity(mut query: Query<(&Velocity, &mut Transform)>) {
     for (velocity, mut transform) in query.iter_mut() {
         transform.translation += velocity.0;
-        let wp: WorldPosition = (&transform.translation).into();
-        tile_state.hero_tile = wp.to_tile_position(game_render.tile_size);
+    }
+}
+
+fn update_player_tile(
+    game_render: Res<GameRender>,
+    mut tile_state: ResMut<TileState>,
+    query: Query<&Transform, With<Hero>>,
+) {
+    if let Some(transform) = query.iter().next() {
+        tile_state.hero_tile =
+            WorldPosition::from(&transform.translation).to_tile_position(game_render.tile_size);
     }
 }
 

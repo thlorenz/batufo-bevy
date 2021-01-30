@@ -76,6 +76,10 @@ impl TilePosition {
         let (x2, y2) = target.axes();
         (x2 - x1, y2 - y1)
     }
+
+    pub fn is_same_tile(&self, other: &TilePosition) -> bool {
+        self.col == other.col && self.row == other.row
+    }
 }
 
 impl Debug for TilePosition {
@@ -221,6 +225,19 @@ impl Into<Transform> for &WorldPosition {
 impl From<&Vec3> for WorldPosition {
     fn from(vec: &Vec3) -> Self {
         WorldPosition::new(vec.x, vec.y, vec.z)
+    }
+}
+
+impl From<&Transform> for WorldPosition {
+    fn from(transform: &Transform) -> WorldPosition {
+        let Vec3 { x, y, z } = transform.translation;
+        WorldPosition::new(x, y, z)
+    }
+}
+
+impl From<Transform> for WorldPosition {
+    fn from(transform: Transform) -> WorldPosition {
+        WorldPosition::from(&transform)
     }
 }
 

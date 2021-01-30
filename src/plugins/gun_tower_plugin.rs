@@ -3,13 +3,16 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 
 use crate::{
-    ai::find_path,
+    ai::{find_path, Shot},
     animations::{
         Movement, MovementAnimation, MovementAxis, RollingBoxAnimation, RotationAxis, Spin,
     },
     arena::{Arena, Tilepath},
     ecs::{
-        components::{Hero, HeroFollower, MovementState, OrthogonalMovement, ProjectileSpawner},
+        components::{
+            Hero, HeroFollower, HeroShooter, MovementState, OrthogonalMovement, ProjectileSpawner,
+        },
+        events::ProjectileRequestedEvent,
         resources::{PositionConverter, Sniper},
     },
     engine::TilePosition,
@@ -23,8 +26,8 @@ pub struct GunTowerPlugin;
 impl Plugin for GunTowerPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_startup_system(gun_tower_setup.system())
-            .add_system(follow_hero_system.system())
-            .add_system(shoot_hero_system.system());
+            .add_system(follow_hero.system())
+            .add_system(shoot_hero.system());
     }
 }
 
@@ -37,6 +40,9 @@ fn gun_tower_setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    //
+    // Moving Tower
+    //
     let mut pos = TilePosition::centered(20, 20, game_render.tile_size)
         .to_world_position(game_render.tile_size);
     let size = game_render.tile_size as f32;
@@ -61,25 +67,69 @@ fn gun_tower_setup(
             ..Default::default()
         })
         .with(HeroFollower)
-        .with(ProjectileSpawner { range: 15.0 });
+        .with(HeroShooter)
+        .with(ProjectileSpawner {
+            range: 15_f32.powi(2),
+            ..Default::default()
+        });
+
+    //
+    // Stationary Tower
+    //
+    let mut pos = TilePosition::centered(20, 40, game_render.tile_size)
+        .to_world_position(game_render.tile_size);
+    let size = game_render.tile_size as f32;
+
+    pos.y = size * 0.6;
+    commands
+        .spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Box::new(size, size * 2.0, size))),
+            material: {
+                let material = materials.add(Color::rgb(0.9, 0.4, 0.2).into());
+                material
+            },
+            transform: {
+                let transform: Transform = (&pos).into();
+                transform
+            },
+            ..Default::default()
+        })
+        .with(HeroShooter)
+        .with(ProjectileSpawner {
+            range: 25_f32.powi(2),
+            ..Default::default()
+        });
 }
 
-fn shoot_hero_system(
+fn shoot_hero(
     sniper: Res<Sniper>,
     tilepath: Res<Tilepath>,
-    shooter_query: Query<(&Transform, &ProjectileSpawner), With<HeroFollower>>,
+    shooter_query: Query<(&Transform, &ProjectileSpawner), With<HeroShooter>>,
     hero_query: Query<&Transform, With<Hero>>,
+    mut events: ResMut<Events<ProjectileRequestedEvent>>,
 ) {
-    for (transform, spawner) in shooter_query.iter() {
-        let hero_transform = hero_query.iter().next().unwrap();
-        let shot = sniper.find_shot(&tilepath, &transform, &hero_transform, Some(spawner.range));
-        if let Some(shot) = shot {
-            println!("shot: {:#?}", shot);
+    if let Some(hero_transform) = hero_query.iter().next() {
+        for (transform, spawner) in shooter_query.iter() {
+            if !spawner.is_ready() {
+                continue;
+            }
+            let shot =
+                sniper.find_shot(&tilepath, &transform, &hero_transform, Some(spawner.range));
+            if let Some((Shot { direction, .. }, origin)) = shot {
+                let event = ProjectileRequestedEvent::new(
+                    origin,
+                    direction,
+                    1.0,
+                    spawner.range,
+                    spawner.health_damage,
+                );
+                events.send(event);
+            }
         }
     }
 }
 
-fn follow_hero_system(
+fn follow_hero(
     time: Res<Time>,
     game_render: Res<GameRender>,
     converter: Res<PositionConverter>,

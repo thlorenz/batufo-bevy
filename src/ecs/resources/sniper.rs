@@ -4,6 +4,7 @@ use crisscross::TileRaycaster;
 use crate::{
     ai::{find_shot, Shot},
     arena::Tilepath,
+    engine::TilePosition,
 };
 
 use super::PositionConverter;
@@ -27,13 +28,13 @@ impl Sniper {
         origin: &Transform,
         target: &Transform,
         range: Option<f32>,
-    ) -> Option<Shot> {
+    ) -> Option<(Shot, TilePosition)> {
         let origin_tile = self.converter.tile_from_translation(&origin.translation)?;
         let target_tile = self.converter.tile_from_translation(&target.translation)?;
         let shot = find_shot(&self.tile_caster, &tile_path, &origin_tile, &target_tile)?;
         match range {
-            None => Some(shot),
-            Some(range) if shot.distance <= range => Some(shot),
+            None => Some((shot, origin_tile)),
+            Some(range) if shot.distance <= range => Some((shot, origin_tile)),
             Some(_) => None,
         }
     }

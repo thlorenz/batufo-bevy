@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use plugins::{LifeCyclePlugin, ProjectilePlugin};
 
 use crate::plugins::{
     ArenaPlugin, CameraPlugin, GamePlugin, GunTowerPlugin, LightPlugin, PathFinderPlugin,
@@ -27,9 +28,11 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(CameraPlugin)
         .add_plugin(ArenaPlugin)
+        .add_plugin(LifeCyclePlugin)
         .add_plugin(PlayerRenderPlugin)
         .add_plugin(PlayerInputPlugin)
         .add_plugin(PlayerMovementPlugin)
+        .add_plugin(ProjectilePlugin)
         .add_plugin(GunTowerPlugin)
         .run();
 }

@@ -16,8 +16,8 @@ fn convert_position(tp: &TilePosition) -> crisscross::TilePosition {
 /// A potential shot
 #[derive(Debug)]
 pub struct Shot {
-    /// Angle in radians
-    pub angle: f32,
+    /// Direction in radians
+    pub direction: f32,
     /// Relative distance from origin to target.
     /// This is the same as the global distance for tile size 1.
     pub distance: f32,
@@ -28,7 +28,7 @@ impl Display for Shot {
         write!(
             f,
             "Shot {{ distance: {}, angle: {} deg }}",
-            self.distance, self.angle
+            self.distance, self.direction
         )
     }
 }
@@ -56,7 +56,7 @@ pub fn find_shot(
     if first_invalid.is_same_tile(&target) {
         let distance = origin.distance_relative(&target);
         Some(Shot {
-            angle: (&angle).into(),
+            direction: (&angle).into(),
             distance,
         })
     } else {
@@ -72,7 +72,7 @@ mod tests {
     impl Shot {
         fn degrees(&self) -> Shot {
             Shot {
-                angle: round(self.angle.to_degrees(), 1),
+                direction: round(self.direction.to_degrees(), 1),
                 distance: round(self.distance, 3),
             }
         }
@@ -88,7 +88,7 @@ mod tests {
         ($actual:expr, $expected:expr $(,)?) => {{
             let shot = $actual.expect("Expected some shot").degrees();
             assert_eq!(shot.distance, $expected.0);
-            assert_eq!(shot.angle, $expected.1);
+            assert_eq!(shot.direction, $expected.1);
         }};
     }
 

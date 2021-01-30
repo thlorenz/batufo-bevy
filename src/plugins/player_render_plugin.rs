@@ -2,7 +2,7 @@ use bevy::{asset::AssetPath, prelude::*};
 
 use crate::{
     arena::Arena,
-    ecs::components::{HeadLights, Hero, Velocity},
+    ecs::components::{HeadLights, Hero, LifeCycle, Velocity},
 };
 
 use super::game_plugin::{GameAssets, GameRender};
@@ -60,5 +60,6 @@ fn setup_hero(
                 .with(HeadLights(true));
         })
         .with(Hero::default())
+        .with(LifeCycle::default())
         .with(Velocity::default());
 }
