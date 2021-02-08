@@ -1,5 +1,4 @@
 use bevy::{asset::AssetPath, prelude::*};
-use bevy_mod_picking::*;
 
 use crate::{arena::Arena, ecs::components::FloorTile};
 
@@ -11,7 +10,7 @@ pub struct ArenaPlugin;
 impl Plugin for ArenaPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_startup_system(setup_floor.system())
-             .add_startup_system(setup_walls.system());
+            .add_startup_system(setup_walls.system());
     }
 }
 
@@ -42,7 +41,6 @@ fn setup_floor(
                 transform,
                 ..Default::default()
             })
-            .with(PickableMesh::default())
             .with(FloorTile(tile.clone()));
     }
 }

@@ -1,6 +1,4 @@
-use crate::{ecs::resources::EntityTile, engine::TilePosition};
-
-pub struct HoveredTileChangedEvent(pub EntityTile);
+use crate::engine::TilePosition;
 
 #[derive(Debug)]
 pub struct ProjectileRequestedEvent {

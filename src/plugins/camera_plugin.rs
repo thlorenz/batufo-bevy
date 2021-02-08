@@ -8,7 +8,6 @@ use crate::ecs::components::Hero;
 
 use super::game_plugin::GameCameras;
 use bevy::input::mouse::MouseWheel;
-use bevy_mod_picking::PickSource;
 
 struct CameraProperties {
     distance_to_hero: f32,
@@ -48,7 +47,6 @@ fn setup_camera(commands: &mut Commands) {
             //        transform,
             ..Default::default()
         })
-        .with(PickSource::default())
         .with(CameraProperties::default());
 }
 
