@@ -1,4 +1,6 @@
-use bevy::{asset::AssetPath, prelude::*};
+use std::path::PathBuf;
+
+use bevy::prelude::*;
 
 use crate::{
     arena::Arena,
@@ -22,28 +24,22 @@ fn setup_hero(
     game_render: Res<GameRender>,
     arena: Res<Arena>,
     asset_server: Res<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let asset = &game_assets.hero;
-    let texture_handle = asset_server.load(AssetPath::new(asset.path.clone(), None));
-
     let mut pos = arena.player.to_world_position(game_render.tile_size);
     let size = game_render.tile_size as f32;
-    pos.y = size * 0.8;
+    pos.y = size * 0.2;
 
     commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::new(size, size / 4.0, size * 1.5))),
-            material: {
-                let material = materials.add(texture_handle.into());
-                material
-            },
-            transform: {
-                let transform: Transform = pos.into();
+        .spawn((
+            {
+                let mut transform: Transform = pos.into();
+                transform.scale = transform.scale * 0.35;
                 transform
             },
-            ..Default::default()
+            GlobalTransform::default(),
+        ))
+        .with_children(|parent| {
+            parent.spawn_scene(asset_server.load(PathBuf::from(&game_assets.hero.path)));
         })
         .with_children(|parent| {
             parent

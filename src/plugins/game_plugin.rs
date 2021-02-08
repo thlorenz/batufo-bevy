@@ -49,7 +49,7 @@ impl Default for GameAssets {
                 height: 192.0,
                 rows: 1,
                 cols: 1,
-                path: "textures/sprites/player.png".into(),
+                path: "gltf/ship/scene.gltf".into(),
             },
         }
     }
