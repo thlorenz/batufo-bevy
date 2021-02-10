@@ -4,8 +4,10 @@ use bevy::{
     render::camera::PerspectiveProjection,
 };
 
-use crate::ecs::components::{HeadLights, Hero, Velocity};
-use crate::engine::physics::vector_for_rotation_y;
+use crate::{
+    ecs::components::{HeadLights, Hero, Velocity},
+    engine::physics::{perp_vector_for_rotation_y, vector_for_rotation_y},
+};
 
 #[derive(Default)]
 pub struct PlayerInputPlugin;
@@ -23,25 +25,27 @@ fn velocity_input_system(
     mut query: Query<(&mut Velocity, &Transform), With<Hero>>,
 ) {
     let dv = 0.004;
-    for (mut velocity, transform) in query.iter_mut() {
-        let Vec3 { x, z, .. } = vector_for_rotation_y(transform.rotation);
+    if let Some((mut velocity, Transform { rotation, .. })) = query.iter_mut().next() {
         if keyboard_input.pressed(KeyCode::W) {
+            let Vec3 { x, z, .. } = vector_for_rotation_y(rotation);
             velocity.0.z -= dv * z;
             velocity.0.x -= dv * x;
         }
         if keyboard_input.pressed(KeyCode::S) {
+            let Vec3 { x, z, .. } = vector_for_rotation_y(rotation);
             velocity.0.z += dv * z;
             velocity.0.x += dv * x;
         }
         if keyboard_input.pressed(KeyCode::A) {
-            velocity.0.x -= dv;
+            let Vec3 { x, z, .. } = perp_vector_for_rotation_y(rotation);
+            velocity.0.x -= 2.0 * dv * x;
+            velocity.0.z -= 2.0 * dv * z;
         }
         if keyboard_input.pressed(KeyCode::D) {
-            velocity.0.x += dv;
+            let Vec3 { x, z, .. } = perp_vector_for_rotation_y(rotation);
+            velocity.0.x += 2.0 * dv * x;
+            velocity.0.z += 2.0 * dv * z;
         }
-        /*
-        velocity.0.x = velocity.0.x.clamp(-max_x_v, max_x_v);
-        */
     }
 }
 

@@ -60,7 +60,7 @@ fn camera_follow_system(
     let lerp = (10.0 * dt).min(game_cameras.platform_lerp);
     for player in players.iter() {
         let p_translation = player.translation;
-        let Vec3 { x, z, .. } = vector_for_rotation_y(player.rotation);
+        let Vec3 { x, z, .. } = vector_for_rotation_y(&player.rotation);
 
         // TODO: this is weird .. should the camera be part of the player?
         for (mut camera, props) in cameras.iter_mut() {
