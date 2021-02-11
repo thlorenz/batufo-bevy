@@ -15,7 +15,7 @@ struct CameraProperties {
 impl Default for CameraProperties {
     fn default() -> Self {
         Self {
-            distance_to_hero: 8.0,
+            distance_to_hero: 5.0,
         }
     }
 }
@@ -32,11 +32,6 @@ impl Plugin for CameraPlugin {
 }
 
 fn setup_camera(commands: &mut Commands) {
-    let translation = Vec3::new(936., 198.4, 184.);
-    let look_at = Vec3::new(936., 38.4, -216.);
-    let mut transform = Transform::from_translation(translation);
-    transform.look_at(look_at, Vec3::unit_y());
-
     commands
         .spawn(Camera3dBundle {
             perspective_projection: PerspectiveProjection {
@@ -44,7 +39,6 @@ fn setup_camera(commands: &mut Commands) {
                 far: 5000.0,
                 ..Default::default()
             },
-            //        transform,
             ..Default::default()
         })
         .with(CameraProperties::default());
@@ -62,11 +56,10 @@ fn camera_follow_system(
         let p_translation = player.translation;
         let Vec3 { x, z, .. } = vector_for_rotation_y(&player.rotation);
 
-        // TODO: this is weird .. should the camera be part of the player?
         for (mut camera, props) in cameras.iter_mut() {
             let camera_target = Vec3::new(
                 p_translation.x + (props.distance_to_hero * x),
-                p_translation.y + props.distance_to_hero * 0.4,
+                p_translation.y + props.distance_to_hero * 0.3,
                 p_translation.z + (props.distance_to_hero * z),
             );
             let dx = (camera_target.x - camera.translation.x) * lerp;
@@ -90,14 +83,17 @@ fn camera_zoom_system(
     mut cameras: Query<&mut CameraProperties, With<Camera>>,
 ) {
     let scroll_factor = 0.02;
+    let min_distance = 3.0;
+    let max_distance = 40.0;
+
     for event in state.mouse_wheel_event_reader.iter(&mouse_wheel_events) {
         for mut props in cameras.iter_mut() {
             props.distance_to_hero -= event.y * scroll_factor;
-            if props.distance_to_hero > 40.0 {
-                props.distance_to_hero = 40.0;
+            if props.distance_to_hero > max_distance {
+                props.distance_to_hero = max_distance;
             }
-            if props.distance_to_hero < 2.0 {
-                props.distance_to_hero = 2.0;
+            if props.distance_to_hero < min_distance {
+                props.distance_to_hero = min_distance;
             }
         }
     }

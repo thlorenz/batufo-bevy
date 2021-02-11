@@ -33,7 +33,7 @@ fn setup_hero(
         .spawn((
             {
                 let mut transform: Transform = pos.into();
-                transform.scale = transform.scale * 0.35;
+                transform.scale = transform.scale * 0.18;
                 transform
             },
             GlobalTransform::default(),
