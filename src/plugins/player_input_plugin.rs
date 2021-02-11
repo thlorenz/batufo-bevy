@@ -1,3 +1,5 @@
+use std::f32::EPSILON;
+
 use bevy::{
     input::{keyboard::KeyCode, mouse::MouseMotion, Input},
     prelude::*,
@@ -5,7 +7,7 @@ use bevy::{
 };
 
 use crate::{
-    ecs::components::{HeadLights, Hero, Velocity},
+    ecs::components::{HeadLights, Hero, HeroHull, Velocity},
     engine::physics::{perp_vector_for_rotation_y, vector_for_rotation_y},
 };
 
@@ -31,20 +33,32 @@ fn velocity_input_system(
             velocity.0.z -= dv * z;
             velocity.0.x -= dv * x;
         }
-        if keyboard_input.pressed(KeyCode::S) {
-            let Vec3 { x, z, .. } = vector_for_rotation_y(rotation);
+        // perpendicular movement (left/right)
+        let Vec3 { x, z, .. } = perp_vector_for_rotation_y(rotation);
+        if keyboard_input.pressed(KeyCode::A) {
+            velocity.0.z -= dv * z;
+            velocity.0.x -= dv * x;
+        } else if keyboard_input.pressed(KeyCode::D) {
             velocity.0.z += dv * z;
             velocity.0.x += dv * x;
-        }
-        if keyboard_input.pressed(KeyCode::A) {
-            let Vec3 { x, z, .. } = perp_vector_for_rotation_y(rotation);
-            velocity.0.x -= 2.0 * dv * x;
-            velocity.0.z -= 2.0 * dv * z;
-        }
-        if keyboard_input.pressed(KeyCode::D) {
-            let Vec3 { x, z, .. } = perp_vector_for_rotation_y(rotation);
-            velocity.0.x += 2.0 * dv * x;
-            velocity.0.z += 2.0 * dv * z;
+        } else {
+            // stabilize perpendicular movement
+            let stability = 0.3;
+            if z.abs() > x.abs() {
+                let perp_vel = velocity.0.z * z;
+                if perp_vel > EPSILON {
+                    velocity.0.z -= dv * z * stability;
+                } else if perp_vel < -EPSILON {
+                    velocity.0.z += dv * z * stability;
+                }
+            } else {
+                let perp_vel = velocity.0.x * x;
+                if perp_vel > EPSILON {
+                    velocity.0.x -= dv * x * stability;
+                } else if perp_vel < -EPSILON {
+                    velocity.0.x += dv * x * stability;
+                }
+            }
         }
     }
 }
@@ -96,13 +110,6 @@ fn yaw_input_system(
             let dx = event.delta.x;
             for mut transform in transform_query.iter_mut() {
                 transform.rotate(Quat::from_rotation_y(-dx * rot_factor));
-                /*
-                println!(
-                    "radians: {:2} degress: {:2}",
-                    transform.rotation.y,
-                    transform.rotation.to_axis_angle().1,
-                );
-                */
             }
         }
     }

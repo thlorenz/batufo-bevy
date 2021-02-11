@@ -9,6 +9,9 @@ pub use orthogonal_mover::*;
 pub struct Hero;
 
 #[derive(Default)]
+pub struct HeroHull;
+
+#[derive(Default)]
 pub struct Velocity(pub Vec3);
 
 #[derive(Default)]

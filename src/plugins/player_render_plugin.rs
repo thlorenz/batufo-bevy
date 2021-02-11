@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     arena::Arena,
-    ecs::components::{HeadLights, Hero, LifeCycle, Velocity},
+    ecs::components::{HeadLights, Hero, HeroHull, LifeCycle, Velocity},
 };
 
 use super::game_plugin::{GameAssets, GameRender};
@@ -39,7 +39,12 @@ fn setup_hero(
             GlobalTransform::default(),
         ))
         .with_children(|parent| {
-            parent.spawn_scene(asset_server.load(PathBuf::from(&game_assets.hero.path)));
+            parent
+                .spawn((Transform::default(), GlobalTransform::default()))
+                .with_children(|parent| {
+                    parent.spawn_scene(asset_server.load(PathBuf::from(&game_assets.hero.path)));
+                })
+                .with(HeroHull);
         })
         .with_children(|parent| {
             parent

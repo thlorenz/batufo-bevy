@@ -14,7 +14,7 @@ pub fn perpendicular(angle: f32) -> f32 {
 pub fn vector_for_angle_y(angle: f32) -> Vec3 {
     let x = angle.sin();
     let z = angle.cos();
-    return Vec3::new(x, 1.0, z);
+    return Vec3::new(x, 1.0, z).normalize();
 }
 
 pub fn vector_for_rotation_y(rotation: &Quat) -> Vec3 {
