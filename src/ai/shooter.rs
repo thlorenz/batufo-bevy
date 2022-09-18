@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crisscross::{Grid, TileRaycaster};
+use crisscross::{AngleRad, Grid, TileRaycaster};
 
 use crate::{arena::Tilepath, engine::TilePosition};
 
@@ -42,7 +42,9 @@ pub fn find_shot(
 ) -> Option<Shot> {
     let origin = convert_position(origin);
     let target = convert_position(target);
-    let angle = origin.angle_to(&target);
+    // TODO(thlorenz): TilePosition.angle_to implementation got lost it seems and therefore we
+    // hacked the angle just to be able to build for now
+    let angle: AngleRad = (0.0).into(); // origin.angle_to(&target);
     let first_invalid = tc.first_invalid(&origin, angle.clone(), |tp| {
         if tp.is_same_tile(&target) {
             // hit the target
@@ -56,7 +58,7 @@ pub fn find_shot(
     if first_invalid.is_same_tile(&target) {
         let distance = origin.distance_relative(&target);
         Some(Shot {
-            direction: (&angle).into(),
+            direction: 0.0,
             distance,
         })
     } else {
